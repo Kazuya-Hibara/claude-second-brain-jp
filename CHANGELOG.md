@@ -4,7 +4,7 @@ All notable changes to **claude-second-brain-jp** (JP fork) and the upstream **c
 
 ## [0.1.0] - 2026-05-05 (v0.1.0 — Phase 1-5 完了)
 
-`claude-second-brain-jp` v0.1.0 リリース。Wave 1 で追加した 5 コマンド (sb-doctor / sb-reconcile / sb-synthesize / sb-graduate-meeting / sb-ingest) と JP ビジネス preset (sb-synthesize 3 サブモード) が全て統合済み。Self-hosted distribution 対応 (`claude plugin marketplace add {{INSTALL_PATH}}`)。
+`claude-second-brain-jp` v0.1.0 リリース。Wave 1 で追加した 5 コマンド (sb-doctor / sb-reconcile / sb-synthesize / sb-graduate-meeting / sb-ingest) と JP ビジネス preset (sb-synthesize 3 サブモード) が全て統合済み。Self-hosted distribution 対応 (`claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp`)。
 
 commit: `{{COMMIT_SHA}}`
 
@@ -21,7 +21,7 @@ commit: `{{COMMIT_SHA}}`
 
 ### Distribution
 
-- `.claude-plugin/marketplace.json` を v0.1.0 向けに整備。`claude plugin marketplace add {{INSTALL_PATH}}` による self-hosted subscribe 対応。
+- `.claude-plugin/marketplace.json` を v0.1.0 向けに整備。`claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp` による self-hosted subscribe 対応。
 - `.claude-plugin/plugin.json` version `0.1.0-jp.1` → `0.1.0`。
 
 ---

@@ -15,7 +15,7 @@ JP 経営者 / 1-5 名法人向けの実践的な使い方ガイド。インス�
 インストール手順:
 
 ```bash
-claude plugin marketplace add {{INSTALL_PATH}}
+claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp
 claude plugin install claude-second-brain-jp@claude-second-brain-jp-marketplace
 ```
 
@@ -289,7 +289,7 @@ claude plugin list
 `claude-second-brain-jp` が表示されない場合は再インストール:
 
 ```bash
-claude plugin marketplace add {{INSTALL_PATH}}
+claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp
 claude plugin install claude-second-brain-jp@claude-second-brain-jp-marketplace
 ```
 

@@ -36,7 +36,7 @@ JP 経営者 / 1-5 名法人向け Claude + Obsidian 第二の脳プラグイン
 **Step 1: プラグインを追加**
 
 ```bash
-claude plugin marketplace add {{INSTALL_PATH}}
+claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp
 ```
 
 **Step 2: プラグインをインストール**
@@ -153,7 +153,7 @@ JP-focused Claude + Obsidian second-brain plugin for solo founders and small tea
 
 ```bash
 # Step 1: add marketplace
-claude plugin marketplace add {{INSTALL_PATH}}
+claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp
 
 # Step 2: install plugin
 claude plugin install claude-second-brain-jp@claude-second-brain-jp-marketplace
@@ -164,7 +164,7 @@ Open your Obsidian vault folder in Claude Code. Type `/wiki` to begin.
 ### Attribution
 
 - Forked from [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (MIT) — upstream knowledge engine foundation
-- eug commands (`/sb-doctor`, `/sb-reconcile`, `/sb-synthesize`) adapted from [eugeniughelbur/obsidian-second-brain](https://github.com/eugeniughelbur/obsidian-second-brain) (MIT, commit `{{ATTRIBUTION_EUG_SHA}}`)
+- eug commands (`/sb-doctor`, `/sb-reconcile`, `/sb-synthesize`) adapted from [eugeniughelbur/obsidian-second-brain](https://github.com/eugeniughelbur/obsidian-second-brain) (MIT, commit `69b9acb`)
 - Based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
 - Built by [Kazuya Hibara](https://github.com/Kazuya-Hibara)
 
