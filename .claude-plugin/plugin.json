@@ -1,28 +1,35 @@
 {
-  "name": "claude-obsidian",
-  "version": "1.6.0",
-  "description": "Claude + Obsidian knowledge companion. Sets up a persistent, compounding wiki vault. Covers memory management, session notetaking, knowledge organization, and agent context across projects. Based on Andrej Karpathy's LLM Wiki pattern. Optional DragonScale Memory extension adds hierarchical log folds, deterministic page addresses, embedding-based semantic tiling lint, and boundary-first autoresearch topic selection.",
+  "name": "claude-second-brain-jp",
+  "version": "0.1.0-jp.1",
+  "description": "JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Forked from AgriciDaniel/claude-obsidian (MIT)。日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate (Status / Last-verified / Half-life)。Karpathy LLM Wiki pattern を JP solo founder の小 context window 向けに最適化。",
   "author": {
-    "name": "AgriciDaniel",
-    "url": "https://github.com/AgriciDaniel"
+    "name": "Kazuya Hibara",
+    "url": "https://github.com/Kazuya-Hibara"
   },
   "license": "MIT",
-  "homepage": "https://github.com/AgriciDaniel/claude-obsidian",
-  "repository": "https://github.com/AgriciDaniel/claude-obsidian",
+  "homepage": "https://github.com/Kazuya-Hibara/claude-second-brain-jp",
+  "repository": "https://github.com/Kazuya-Hibara/claude-second-brain-jp",
   "keywords": [
+    "claude-code",
     "obsidian",
-    "knowledge-base",
-    "wiki",
-    "memory",
-    "notetaker",
     "second-brain",
-    "vault",
-    "markdown",
-    "cross-project",
+    "knowledge-management",
+    "japanese",
+    "jp",
     "llm-wiki",
     "karpathy",
     "pkm",
+    "wiki",
+    "memory",
+    "vault",
+    "markdown",
+    "cross-project",
+    "notetaker",
     "canvas",
-    "visual"
+    "visual",
+    "business-context",
+    "solo-founder",
+    "meeting-minutes",
+    "proposal-drafting"
   ]
 }

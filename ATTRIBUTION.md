@@ -1,5 +1,11 @@
 # Attributions
 
+`claude-second-brain-jp` は [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (MIT) の fork であり、JP 経営者向けに schema preset / hot cache 階層 / cron 制約 / memory freshness gate を追加する派生プロジェクトです。
+
+下記 attribution は upstream のものを保持しています。JP 派生固有の attribution は文末セクションに追記。
+
+---
+
 claude-obsidian is an original work. The following third-party patterns, tools, and creators informed its design.
 
 ---
@@ -40,8 +46,19 @@ The following Obsidian community plugins ship with this vault as pre-installed b
 
 ---
 
-## claude-obsidian
+## claude-obsidian (upstream)
 
 **Author:** AgriciDaniel / AI Marketing Hub
 **License:** MIT (see [LICENSE](LICENSE))
 **Repository:** https://github.com/AgriciDaniel/claude-obsidian
+
+---
+
+## claude-second-brain-jp (this fork)
+
+**Author:** Kazuya Hibara
+**License:** MIT (see [LICENSE](LICENSE))
+**Repository:** https://github.com/Kazuya-Hibara/claude-second-brain-jp
+**Contact:** contact@kazuyahibara.com
+**Forked at:** upstream v1.6.0 (2026-05-05)
+**Differentiation roadmap:** see `IMPLEMENTATION-PLAN.md` Phase 2-5 (deferred to next milestone)

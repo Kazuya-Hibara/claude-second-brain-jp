@@ -1,14 +1,25 @@
 
-# claude-obsidian
+# claude-second-brain-jp
+
+> **Status**: v0.1.0-jp.1 (Phase 1 — fork + attribution only)
+> **Forked from**: [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (MIT)
+> **Maintainer**: [Kazuya Hibara](https://github.com/Kazuya-Hibara) — `contact@kazuyahibara.com`
+> **Differentiation**: 日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate。Phase 2-5 (JP-specific additions) は別 milestone で実装予定。
+
+JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Karpathy LLM Wiki pattern を **JP solo founder / 1-5 名法人** の小 context window 向けに最適化。
+
+下記 README は upstream `AgriciDaniel/claude-obsidian` の内容を一時保持 (Phase 1 attribution-only) しています。JP 化された README は Phase 5 (Publish) で全面差し替え予定。
+
+---
 
 <p align="center">
   <img src="wiki/meta/claude-obsidian-gif-cover-16x9.gif" alt="claude-obsidian" width="100%" />
 </p>
 
-[![GitHub stars](https://img.shields.io/github/stars/AgriciDaniel/claude-obsidian?style=flat&color=e8734a)](https://github.com/AgriciDaniel/claude-obsidian/stargazers)
+[![Forked from](https://img.shields.io/badge/Forked_from-AgriciDaniel%2Fclaude--obsidian-orange)](https://github.com/AgriciDaniel/claude-obsidian)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-8B5CF6)](https://code.claude.com/docs/en/discover-plugins)
-[![Blog Post](https://img.shields.io/badge/Deep_Dive-Blog_Post-22c55e)](https://agricidaniel.com/blog/claude-obsidian-ai-second-brain)
+[![Status](https://img.shields.io/badge/Status-Phase_1_attribution--only-yellow)](https://github.com/Kazuya-Hibara/claude-second-brain-jp)
 
 Claude + Obsidian knowledge companion. A running notetaker that builds and maintains a persistent, compounding wiki vault. Every source you add gets integrated. Every question you ask pulls from everything that has been read. Knowledge compounds like interest.
 

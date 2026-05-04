@@ -1,29 +1,29 @@
 {
-  "name": "claude-obsidian-marketplace",
+  "name": "claude-second-brain-jp-marketplace",
   "owner": {
-    "name": "AgriciDaniel",
-    "url": "https://github.com/AgriciDaniel"
+    "name": "Kazuya Hibara",
+    "url": "https://github.com/Kazuya-Hibara"
   },
   "metadata": {
-    "description": "claude-obsidian: Claude + Obsidian knowledge companion by AgriciDaniel",
-    "version": "1.6.0"
+    "description": "claude-second-brain-jp: JP 経営者向け Claude + Obsidian 第二の脳プラグイン by Kazuya Hibara (Forked from AgriciDaniel/claude-obsidian)",
+    "version": "0.1.0-jp.1"
   },
   "plugins": [
     {
-      "name": "claude-obsidian",
+      "name": "claude-second-brain-jp",
       "source": {
         "source": "github",
-        "repo": "AgriciDaniel/claude-obsidian",
+        "repo": "Kazuya-Hibara/claude-second-brain-jp",
         "ref": "main"
       },
-      "description": "Claude + Obsidian knowledge companion. Sets up a persistent, compounding wiki vault. Covers memory management, session notetaking, knowledge organization, and agent context across projects. Optional DragonScale Memory extension adds hierarchical log folds, deterministic page addresses, embedding-based semantic tiling lint, and boundary-first autoresearch topic selection.",
-      "version": "1.6.0",
+      "description": "JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Forked from AgriciDaniel/claude-obsidian (MIT)。日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate。",
+      "version": "0.1.0-jp.1",
       "author": {
-        "name": "AgriciDaniel",
-        "url": "https://github.com/AgriciDaniel"
+        "name": "Kazuya Hibara",
+        "url": "https://github.com/Kazuya-Hibara"
       },
-      "homepage": "https://github.com/AgriciDaniel/claude-obsidian",
-      "repository": "https://github.com/AgriciDaniel/claude-obsidian",
+      "homepage": "https://github.com/Kazuya-Hibara/claude-second-brain-jp",
+      "repository": "https://github.com/Kazuya-Hibara/claude-second-brain-jp",
       "license": "MIT"
     }
   ]
