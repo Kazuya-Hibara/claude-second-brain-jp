@@ -1,6 +1,6 @@
 {
   "name": "claude-second-brain-jp",
-  "version": "0.1.0-jp.1",
+  "version": "0.1.0",
   "description": "JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Forked from AgriciDaniel/claude-obsidian (MIT)。日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate (Status / Last-verified / Half-life)。Karpathy LLM Wiki pattern を JP solo founder の小 context window 向けに最適化。",
   "author": {
     "name": "Kazuya Hibara",

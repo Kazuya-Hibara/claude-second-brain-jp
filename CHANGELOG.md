@@ -6,7 +6,7 @@ All notable changes to **claude-second-brain-jp** (JP fork) and the upstream **c
 
 `claude-second-brain-jp` v0.1.0 リリース。Wave 1 で追加した 5 コマンド (sb-doctor / sb-reconcile / sb-synthesize / sb-graduate-meeting / sb-ingest) と JP ビジネス preset (sb-synthesize 3 サブモード) が全て統合済み。Self-hosted distribution 対応 (`claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp`)。
 
-commit: `{{COMMIT_SHA}}`
+tag: `v0.1.0` (GitHub release: https://github.com/Kazuya-Hibara/claude-second-brain-jp/releases/tag/v0.1.0)
 
 ### Added
 

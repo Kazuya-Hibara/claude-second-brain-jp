@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "claude-second-brain-jp: JP 経営者向け Claude + Obsidian 第二の脳プラグイン by Kazuya Hibara (Forked from AgriciDaniel/claude-obsidian)",
-    "version": "0.1.0-jp.1"
+    "version": "0.1.0"
   },
   "plugins": [
     {
@@ -14,10 +14,10 @@
       "source": {
         "source": "github",
         "repo": "Kazuya-Hibara/claude-second-brain-jp",
-        "ref": "main"
+        "ref": "v0.1.0"
       },
-      "description": "JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Forked from AgriciDaniel/claude-obsidian (MIT)。日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate。",
-      "version": "0.1.0-jp.1",
+      "description": "JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Forked from AgriciDaniel/claude-obsidian (MIT)。日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate + 5 sb-* commands (doctor / reconcile / synthesize / graduate-meeting / ingest)。",
+      "version": "0.1.0",
       "author": {
         "name": "Kazuya Hibara",
         "url": "https://github.com/Kazuya-Hibara"
