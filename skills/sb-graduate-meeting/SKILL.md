@@ -1,6 +1,6 @@
 ---
 name: sb-graduate-meeting
-description: "議事録ページから「決定事項」構文 (「〜と決定」「〜が承認」等) を抽出し、ADR (Architecture Decision Record) として wiki/decisions/ に自動書き出しする。複数 commitment は N 件別 ADR file に分割。元議事録に Graduated-to: frontmatter を追記。決定事項なしの場合は no-op。Triggers on: /sb-graduate-meeting, 議事録をADRに, 決定事項をgradiate, 議事録をgradiate"
+description: "議事録ページから「決定事項」構文 (「〜と決定」「〜が承認」等) を抽出し、ADR (Architecture Decision Record) として wiki/decisions/ に自動書き出しする。複数 commitment は N 件別 ADR file に分割。元議事録に Graduated-to: frontmatter を追記。決定事項なしの場合は no-op。Triggers on: /sb-graduate-meeting, 議事録をADRに, 決定事項をgraduate, 議事録をgraduate, 決定事項をADRに"
 ---
 
 # sb-graduate-meeting: 議事録 → ADR 自動 Graduate
@@ -92,6 +92,35 @@ title "2026-05-05 経営会議"
 
 slug 変換に迷う場合は commitment の内容からキーワードを英語で抽出しても良い
 (例: 「モバイルアプリ開発優先」→ `mobile-app-priority`)。
+
+### slug sanitization (mandatory、path traversal 防止)
+
+生成した slug は以下の正規表現に **必ず適合させる**:
+
+```
+^[a-z0-9-]{1,60}$
+```
+
+不適合の場合は以下を順に適用:
+- 大文字 → 小文字 (`tolower`)
+- 英数字 + ハイフン以外を削除 (`s/[^a-z0-9-]//g`)
+- 連続ハイフンを 1 個に圧縮 (`s/-+/-/g`)
+- 先頭・末尾のハイフン除去
+- 60 文字超過なら truncate
+
+**禁止文字列** (検出時は slug を再生成):
+- `..` (parent directory traversal)
+- `/` `\` (path separator)
+- 先頭 `.` (隠しファイル化)
+- 空文字列 (sanitize 後に空になった場合は title 全体の hash で fallback)
+
+**最終 path 検証**: 生成された full path が `wiki/decisions/` 配下であることを realpath で確認 (`wiki/decisions/../etc/...` 等を escape detection で reject)。
+
+### slug drift 防止 (idempotency)
+
+同一議事録に対し `/sb-graduate-meeting` を再実行する場合:
+- 元議事録の frontmatter `Graduated-to:` が既存なら、そこに記録された slug を **再利用する** (新規生成しない)
+- 2 回目以降の slug 揺らぎで既存 ADR が孤立して新規 ADR が作られる事故を防ぐ
 
 ### ADR テンプレート (1 commitment = 1 ファイル)
 

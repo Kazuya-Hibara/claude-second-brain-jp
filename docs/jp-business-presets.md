@@ -169,11 +169,19 @@
 
 ### 生成 ADR のフォーマット
 
+skills/sb-graduate-meeting/SKILL.md と同一の canonical schema を使用:
+
 ```markdown
 ---
-date: 2026-05-05
-status: accepted
-context: [議事録から抽出したコンテキスト]
+type: decision
+title: "<commitment の簡潔な要約>"
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+tags: [decision, <議事録の tags から継承>]
+Status: ACTIVE
+Last-verified: YYYY-MM-DD
+Half-life: 90d
+source_meeting: "[[<議事録ページ名>]]"
 ---
 
 # [決定事項のタイトル]
@@ -195,6 +203,8 @@ context: [議事録から抽出したコンテキスト]
 
 [元議事録への wiki リンク]
 ```
+
+frontmatter 3 必須 field (`Status` / `Last-verified` / `Half-life`) は plugin 全体の memory freshness gate と整合し、`/sb-doctor` Category 1/2 で検証されます。
 
 ---
 

@@ -61,4 +61,19 @@ The following Obsidian community plugins ship with this vault as pre-installed b
 **Repository:** https://github.com/Kazuya-Hibara/claude-second-brain-jp
 **Contact:** contact@kazuyahibara.com
 **Forked at:** upstream v1.6.0 (2026-05-05)
-**Differentiation roadmap:** see `IMPLEMENTATION-PLAN.md` Phase 2-5 (deferred to next milestone)
+**Differentiation roadmap:** see `IMPLEMENTATION-PLAN.md` Phase 2-5 (v0.1.0 で完了)
+
+---
+
+## eug Commands (`/sb-doctor`, `/sb-reconcile`, `/sb-synthesize`)
+
+**Author:** Eugen Ughelbur (eugeniughelbur)
+**Source:** https://github.com/eugeniughelbur/obsidian-second-brain
+**License:** MIT
+**Commit pin:** `69b9acb` (verified 2026-05-05)
+**Adapted commands:**
+- `commands/sb-doctor.md` ← `commands/obsidian-health.md` (8 categories lint check skeleton + JP business preset 統合)
+- `commands/sb-reconcile.md` ← `commands/obsidian-reconcile.md` (evidence-based winner judge 5 軸 ladder + History fallback)
+- `commands/sb-synthesize.md` ← `commands/obsidian-synthesize.md` (4 並列 fold + JP 3 sub-mode 統合)
+
+各 port command / skill ファイルの YAML front-matter 直下にも inline attribution comment (`<!-- Adapted from eugeniughelbur/obsidian-second-brain (MIT, commit 69b9acb) -->`) を保持しています。

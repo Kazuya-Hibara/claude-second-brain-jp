@@ -8,7 +8,6 @@ description: >
   Triggers on: "/sb-synthesize", "synthesize the vault", "find unnamed patterns",
   "vault に潜むパターン抽出", "sb-synthesize", "auto synthesis", "scheduled synthesis",
   "議事録 commitment 抽出", "提案書 diff", "Slack thread TL;DR".
-allowed-tools: Read Write Edit Glob Grep Bash Task
 ---
 <!-- Adapted from eugeniughelbur/obsidian-second-brain (MIT, commit 69b9acb) -->
 
