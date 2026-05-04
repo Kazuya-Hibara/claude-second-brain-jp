@@ -1,9 +1,9 @@
 ---
-name: wiki-ingest
+name: sb-ingest
 description: "Ingest sources into the Obsidian wiki vault. Reads a source, extracts entities and concepts, creates or updates wiki pages, cross-references, and logs the operation. Supports files, URLs, and batch mode. Triggers on: ingest, process this source, add this to the wiki, read and file this, batch ingest, ingest all of these, ingest this url."
 ---
 
-# wiki-ingest: Source Ingestion
+# sb-ingest: Source Ingestion
 
 Read the source. Write the wiki. Cross-reference everything. A single source typically touches 8-15 wiki pages.
 
@@ -223,9 +223,74 @@ Do not silently overwrite old claims. Flag and let the user decide.
 
 ---
 
+## JP/EN 自動言語検出 と aliases 自動生成
+
+ソースをインジェストする際、**ソースの primary 言語を自動判定**し、反対言語の候補を `aliases:` フィールドに自動生成する。
+
+### 言語判定ロジック
+
+1. **文字種カウント**: ソース本文 (frontmatter を除く) の文字を走査し、以下を計測する
+   - JP 文字数: ひらがな・カタカナ・漢字 (CJK Unified Ideographs) の合計
+   - EN 文字数: ASCII アルファベット (a-z, A-Z) の合計
+2. **判定ルール**:
+   - JP 文字数 > EN 文字数 × 0.3 → `primary: jp` (日本語が支配的、EN 技術用語は混在 OK)
+   - EN 文字数 > JP 文字数 × 0.3 → `primary: en`
+   - 両方が閾値以下 → `primary: jp` をデフォルトとする (このリポジトリの主用途が日本語のため)
+3. **mixed 判定**: JP と EN が両方 20% 以上存在する場合は mixed とし、JP/EN いずれかを primary に選んだ上で `language_secondary:` を記録する
+
+### aliases 自動生成
+
+primary 言語の判定後、**反対言語のタイトル候補**を LLM が生成し frontmatter の `aliases:` フィールドに追記する。
+
+| primary | aliases に生成する言語 | 例 |
+|---|---|---|
+| jp | 英語タイトル候補 1-3 件 | `aliases: ["AI System Integration Guide", "AI Integration"]` |
+| en | 日本語タイトル候補 1-3 件 | `aliases: ["機械学習の基礎", "ML基礎ガイド"]` |
+| mixed (jp primary) | 英語タイトル候補 1-3 件 | `aliases: ["Cloud API Design Patterns"]` |
+| mixed (en primary) | 日本語タイトル候補 1-3 件 | `aliases: ["クラウドAPI設計", "API設計パターン"]` |
+
+**LLM への指示 (ページ作成時に自動適用)**:
+
+```
+このソースの primary 言語は {primary} です。
+以下の条件で aliases を生成してください:
+- 反対言語 ({opposite_lang}) で自然なタイトル候補を 1-3 件
+- 固有名詞・技術用語はそのまま保持 (翻訳しない)
+- 候補は YAML リスト形式: aliases: ["候補1", "候補2"]
+- wiki/sources/ に作成するページの frontmatter に含める
+```
+
+### ソース frontmatter への記録
+
+言語判定結果は作成する `wiki/sources/` ページの frontmatter に追記する:
+
+```yaml
+---
+type: source
+title: "タイトル"
+language_primary: jp        # jp | en
+language_secondary: en      # mixed の場合のみ追記
+aliases: ["English Title", "Alt Title"]  # 自動生成した反対言語候補
+---
+```
+
+### ログ記録
+
+`wiki/log.md` のインジェストエントリに言語判定結果を 1 行追加する:
+
+```markdown
+## [YYYY-MM-DD] ingest | Source Title
+- Source: `.raw/articles/filename.md`
+- Language: jp (mixed: EN technical terms detected)
+- Aliases generated: ["English Title"]
+- Pages created: ...
+```
+
+---
+
 ## What Not to Do
 
-- **Source files under `.raw/` are immutable.** Do not modify the files that users drop there (articles, transcripts, images). The `.raw/.manifest.json` delta tracker and its `address_map` (DragonScale Mechanism 2) are the only files under `.raw/` that `wiki-ingest` itself maintains. Treat every other file under `.raw/` as read-only source content.
+- **Source files under `.raw/` are immutable.** Do not modify the files that users drop there (articles, transcripts, images). The `.raw/.manifest.json` delta tracker and its `address_map` (DragonScale Mechanism 2) are the only files under `.raw/` that `sb-ingest` itself maintains. Treat every other file under `.raw/` as read-only source content.
 - Do not create duplicate pages. Always check the index and search before creating.
 - Do not skip the log entry. Every ingest must be recorded.
 - Do not skip the hot cache update. It is what keeps future sessions fast.

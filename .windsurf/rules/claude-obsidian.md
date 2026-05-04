@@ -30,7 +30,7 @@ claude-obsidian/
 Run `bash bin/setup-multi-agent.sh` once to symlink `skills/` into `.windsurf/skills/`. Then Cascade auto-discovers all 10 skills:
 
 - `wiki`: orchestration, vault scaffolding, hot cache
-- `wiki-ingest`: files, URLs, images → 8-15 wiki pages
+- `sb-ingest`: files, URLs, images → 8-15 wiki pages
 - `wiki-query`: Quick / Standard / Deep query modes
 - `wiki-lint`: health check (orphans, dead links, gaps)
 - `save`: file conversation as wiki note

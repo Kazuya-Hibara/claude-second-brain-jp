@@ -21,7 +21,7 @@ bash bin/setup-multi-agent.sh
 | Skill | What it does |
 |---|---|
 | `wiki` | Scaffolds a new vault, manages hot cache, routes to sub-skills |
-| `wiki-ingest` | Reads sources (files, URLs, images) and creates 8-15 wiki pages each |
+| `sb-ingest` | Reads sources (files, URLs, images) and creates 8-15 wiki pages each |
 | `wiki-query` | Answers questions from the wiki with three depth modes |
 | `wiki-lint` | Health checks: orphans, dead links, stale claims, gaps |
 | `save` | Files the current conversation as a wiki note |
@@ -34,8 +34,8 @@ bash bin/setup-multi-agent.sh
 ## Trigger Phrases (Examples)
 
 - "set up wiki" → `wiki`
-- "ingest this article" → `wiki-ingest`
-- "ingest https://example.com/article" → `wiki-ingest` (URL mode)
+- "ingest this article" → `sb-ingest`
+- "ingest https://example.com/article" → `sb-ingest` (URL mode)
 - "what do you know about X" → `wiki-query`
 - "lint the wiki" → `wiki-lint`
 - "save this conversation" → `save`

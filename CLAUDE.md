@@ -4,7 +4,7 @@ This folder is both a Claude Code plugin and an Obsidian vault.
 
 **Plugin name:** `claude-second-brain-jp`
 **Forked from:** [`AgriciDaniel/claude-obsidian`](https://github.com/AgriciDaniel/claude-obsidian) (MIT) v1.6.0
-**Skills:** `/wiki`, `/wiki-ingest`, `/wiki-query`, `/wiki-lint`, `/save`, `/autoresearch`, `/canvas`
+**Skills:** `/wiki`, `/sb-ingest`, `/wiki-query`, `/wiki-lint`, `/save`, `/autoresearch`, `/canvas`
 **Vault path:** This directory (open in Obsidian directly)
 
 ## What This Vault Is For

@@ -162,7 +162,7 @@ Read `wiki/log.md`. For each ingest entry, parse:
 ### Auto-fix policy
 
 - This check is **diagnostic only**. Auto-fix is not appropriate (rewriting requires source re-read and judgement).
-- Recommend: queue affected sources for **rewrite pass** via `/wiki-ingest --rewrite-only [source]` (Phase 2.6 tooling, deferred).
+- Recommend: queue affected sources for **rewrite pass** via `/sb-ingest --rewrite-only [source]` (Phase 2.6 tooling, deferred).
 
 ---
 
@@ -308,7 +308,7 @@ Before validating anything, classify the page:
 - Counter drift (observed counter >= peek): **error**.
 - Address-map mismatch: **error**.
 
-Lint only observes. Do NOT auto-assign missing addresses during lint. Assignment is `wiki-ingest`'s responsibility only.
+Lint only observes. Do NOT auto-assign missing addresses during lint. Assignment is `sb-ingest`'s responsibility only.
 
 ### Output section in the lint report
 
@@ -323,7 +323,7 @@ Lint only observes. Do NOT auto-assign missing addresses during lint. Assignment
 ### Errors
 - [[Page Name]]: invalid address format `{value}`. Expected `c-NNNNNN` or `l-NNNNNN`.
 - [[Page A]] and [[Page B]] share address `c-000042`.
-- [[Post-Rollout Page]]: missing address. Page created 2026-04-25 (post-rollout); address required. Run wiki-ingest or manually run `./scripts/allocate-address.sh` and add to frontmatter.
+- [[Post-Rollout Page]]: missing address. Page created 2026-04-25 (post-rollout); address required. Run sb-ingest or manually run `./scripts/allocate-address.sh` and add to frontmatter.
 - [[Page Name]] has address `c-000100` but counter peek is `50`. Counter drift; run `./scripts/allocate-address.sh --rebuild`.
 - `.raw/.manifest.json` maps `wiki/foo.md` -> `c-000010` but page frontmatter has `c-000012`. Resolve mismatch.
 

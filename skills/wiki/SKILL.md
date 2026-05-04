@@ -102,7 +102,7 @@ Route to the correct operation based on what the user says:
 | User says | Operation | Sub-skill |
 |-----------|-----------|-----------|
 | "scaffold", "set up vault", "create wiki" | SCAFFOLD | this skill |
-| "ingest [source]", "process this", "add this" | INGEST | `wiki-ingest` |
+| "ingest [source]", "process this", "add this" | INGEST | `sb-ingest` |
 | "what do you know about X", "query:" | QUERY | `wiki-query` |
 | "lint", "health check", "clean up" | LINT | `wiki-lint` |
 | "save this", "file this", "/save" | SAVE | `save` |
@@ -225,7 +225,7 @@ Display only after these infrequent, high-value completions:
 
 Do NOT show the footer after:
 - `/wiki-query` (too frequent — conversational)
-- `/wiki-ingest` (individual source ingestion — happens often)
+- `/sb-ingest` (individual source ingestion — happens often)
 - `/save` (quick save operation)
 - `/canvas` (visual work, intermediate)
 - `/defuddle` (utility)
