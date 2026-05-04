@@ -1,5 +1,5 @@
 ---
-description: 4 並列 fold で vault を走査し、未命名のパターンを検出して synthesis page を自動生成する。Phase 3.3 shell — JP sub-modes (--meeting-commitments / --proposal-diff / --slack-tldr) は Wave 2 で接続予定の stub。
+description: 4 並列 fold で vault を走査し、未命名のパターンを検出して synthesis page を自動生成する。JP business 向け 3 sub-mode (--meeting-commitments / --proposal-diff / --slack-tldr) を備える。
 ---
 <!-- Adapted from eugeniughelbur/obsidian-second-brain (MIT, commit 69b9acb) -->
 
@@ -10,11 +10,17 @@ description: 4 並列 fold で vault を走査し、未命名のパターンを�
 ## 起動 mode
 
 ```
-/sb-synthesize                          # 既定 mode = 4 並列 fold で全 vault scan
-/sb-synthesize --meeting-commitments    # JP sub-mode: 議事録から commitment / 期日 / 担当 抽出 (Wave 2 接続)
-/sb-synthesize --proposal-diff          # JP sub-mode: 新提案書 vs 過去案件 wiki page diff (Wave 2 接続)
-/sb-synthesize --slack-tldr             # JP sub-mode: JP Slack thread → TL;DR + 関係者 + EN 翻訳 alias (Wave 2 接続)
+/sb-synthesize                                          # 既定 mode = 4 並列 fold で全 vault scan
+/sb-synthesize --meeting-commitments <path>             # 議事録から commitment / 期日 / 担当 を抽出
+/sb-synthesize --proposal-diff <path>                   # 新提案書 vs 過去案件 の diff + 推奨セクション
+/sb-synthesize --slack-tldr <path>                      # JP Slack thread → TL;DR + 関係者 + 任意 EN 翻訳 alias
 ```
+
+### Sub-mode 概要
+
+- **`--meeting-commitments`**: 議事録 markdown を読み、JP 動詞パターン (「〜と決定」「〜が承認」「〜することにした」「〜とする」) で commitment を検出。近傍行の「期限: YYYY-MM-DD」「担当: <氏名>」をペアで抽出し、`commitment / 期日 / 担当` の 3 列 structured output (Markdown table) を生成する。「議論した」「検討中」「保留」は除外。
+- **`--proposal-diff`**: 新提案書 (NEW) と過去案件 wiki page (PAST) を読み比較。価格・納期・SLA・オプション機能・契約条項などの差分を抽出し、各差分に **重要度 (HIGH/MEDIUM/LOW)** + **推奨 (取り込み / 却下 / 要検討)** + 1-2 行の理由を付与した推奨セクションを提示する。過去案件の成功/失敗の振り返りを根拠として活用。
+- **`--slack-tldr`**: JP Slack thread を読み、(1) 3-5 行の日本語 TL;DR、(2) 関係者 list (各人 1 行で立場明記)、(3) frontmatter `translate_to_en: true` がある時のみ TL;DR の EN 翻訳 alias、を生成する。
 
 ## 実行手順 (既定 mode = 4 並列 fold)
 
@@ -55,15 +61,14 @@ vault は自分で insight を生む。聞かれた時だけでなく、自分�
 
 ---
 
-## JP Sub-modes (Wave 2 接続予定、本 shell では stub)
+## JP Sub-modes 詳細
 
-`--meeting-commitments` / `--proposal-diff` / `--slack-tldr` の各 flag は **Phase 2.3 (Wave 2)** で sub-mode prompt fold が接続される。本 shell (Phase 3.3) では stub として以下の error を返して exit 1 する:
+`--meeting-commitments` / `--proposal-diff` / `--slack-tldr` は Phase 2.3 (Wave 2) で接続済。各 sub-mode の prompt fold 設計と acceptance criteria は `skills/sb-synthesize/SKILL.md` の **「JP Sub-mode prompt fold (Wave 2 / Phase 2.3 接続済)」** section を参照。
 
-```
-[sb-synthesize] sub-mode "<flag>" is not wired yet. Wave 2 (Phase 2.3) will connect the prompt fold. See skills/sb-synthesize/SKILL.md "JP Sub-mode Hook" section.
-```
-
-接続後は各 sub-mode の fixture (`tests/fixtures/sb-synthesize/jp-meeting-minutes.md` 等) が acceptance test の起点になる。
+各 sub-mode の fixture は `tests/fixtures/sb-synthesize/` 配下:
+- `jp-meeting-minutes.md` (`--meeting-commitments`)
+- `jp-proposal-vs-past.md` (`--proposal-diff`)
+- `jp-slack-thread.md` (`--slack-tldr`)
 
 ---
 

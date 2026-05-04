@@ -3,10 +3,11 @@ name: sb-synthesize
 description: >
   vault の未命名パターンを 4 並列 fold (cross-source / entity convergence / concept evolution / orphan rescue)
   で検出し、synthesis page を自動生成する。聞かれた時だけでなく schedule でも走る。
-  JP business 向け sub-mode (--meeting-commitments / --proposal-diff / --slack-tldr) hook
-  を備える (中身は Wave 2 / Phase 2.3 で接続)。
+  JP business 向け 3 sub-mode (--meeting-commitments / --proposal-diff / --slack-tldr) を
+  備える (Wave 2 / Phase 2.3 で接続済)。
   Triggers on: "/sb-synthesize", "synthesize the vault", "find unnamed patterns",
-  "vault に潜むパターン抽出", "sb-synthesize", "auto synthesis", "scheduled synthesis".
+  "vault に潜むパターン抽出", "sb-synthesize", "auto synthesis", "scheduled synthesis",
+  "議事録 commitment 抽出", "提案書 diff", "Slack thread TL;DR".
 allowed-tools: Read Write Edit Glob Grep Bash Task
 ---
 <!-- Adapted from eugeniughelbur/obsidian-second-brain (MIT, commit 69b9acb) -->
@@ -34,13 +35,13 @@ allowed-tools: Read Write Edit Glob Grep Bash Task
 ## Mode dispatch (top-level)
 
 ```
-/sb-synthesize                          → run_default_4_fold()
-/sb-synthesize --meeting-commitments    → run_jp_submode("meeting-commitments")  [Wave 2 で接続]
-/sb-synthesize --proposal-diff          → run_jp_submode("proposal-diff")        [Wave 2 で接続]
-/sb-synthesize --slack-tldr             → run_jp_submode("slack-tldr")           [Wave 2 で接続]
+/sb-synthesize                                       → run_default_4_fold()
+/sb-synthesize --meeting-commitments <path>          → run_meeting_commitments(path)
+/sb-synthesize --proposal-diff <path>                → run_proposal_diff(path)
+/sb-synthesize --slack-tldr <path>                   → run_slack_tldr(path)
 ```
 
-mode 判定は flag の literal match。複数 flag は許可しない (`mutually exclusive`)。
+mode 判定は flag の literal match。複数 flag は許可しない (`mutually exclusive`)。sub-mode は引数として input file path を受け取る (例: `tests/fixtures/sb-synthesize/jp-meeting-minutes.md`)。
 
 ---
 
@@ -173,48 +174,144 @@ frontmatter は claude-second-brain-jp の **memory freshness gate** (`Status` /
 
 ---
 
-## JP Sub-mode Hook (Wave 2 / Phase 2.3 で接続)
+## JP Sub-mode prompt fold (Wave 2 / Phase 2.3 接続済)
 
-本 shell (Phase 3.3) では JP business 向け sub-mode は **stub のみ**。flag を literal match して以下の error を出力して exit 1 する:
+本 SKILL.md は JP business 向け 3 sub-mode の prompt fold を内蔵する。各 sub-mode は **input file path を必須引数** で受け取り、所定の output 構造を生成する。flag を literal match して下記 prompt fold を Lead が読み実行する。
+
+### Sub-mode 1: `--meeting-commitments`
+
+**Input contract**: 議事録 markdown (例: `tests/fixtures/sb-synthesize/jp-meeting-minutes.md`)。frontmatter 任意、本文に決定事項を JP で記述。
+
+**Prompt fold (Lead がこの手順を 1 ターンで実行)**:
+
+1. 引数 path を `Read` で全文取得
+2. 本文を行単位で走査し、以下の **JP commitment 動詞パターン** を regex 相当の意味マッチで検出:
+   - 「〜と決定」「〜と決まった」「〜が決定」
+   - 「〜が承認」「〜を承認」「承認された」
+   - 「〜することにした」「〜することに決定」
+   - 「〜とする」「〜となる」 (能動的決定の文脈に限る)
+   - 除外パターン: 「議論した」「検討中」「保留」「次回までに」「検討事項」「結論を出さず」(これらが同一段落にあれば commitment ではない)
+3. 各 commitment hit について、**同一段落 or 直後 5 行以内** の以下を抽出:
+   - 期日: `期限:` `期日:` `納期:` `〜まで` `YYYY-MM-DD` 形式の日付
+   - 担当: `担当:` `担当者:` または `[[人名]]` wikilink
+4. 抽出結果を Markdown table で structured output:
+
+   ```markdown
+   ## 抽出 commitment
+
+   | # | commitment | 期日 | 担当 |
+   |---|------------|------|------|
+   | 1 | β版リリース日確定 (2026-06-01) | 2026-06-01 | [[田中]] |
+   | 2 | 価格モデル A 採用 | 2026-05-15 | [[佐藤]] |
+   | ... | ... | ... | ... |
+   ```
+
+5. 末尾に summary 1 行: `合計 N 件の commitment を抽出 (除外パターン M 件)`
+6. 抽出 0 件なら「commitment 検出なし。本文には決定事項が含まれていません。」と出力
+
+**Acceptance**:
+- 上記 fixture で **4 件以上** の commitment table 行を生成
+- 「議論のみ」「検討中」「保留」段落 (議題5・採用計画) を除外
+- 各行に commitment / 期日 / 担当 の 3 列が揃っている
+
+---
+
+### Sub-mode 2: `--proposal-diff`
+
+**Input contract**: 新旧 2 提案を含む markdown (例: `tests/fixtures/sb-synthesize/jp-proposal-vs-past.md`)。`## NEW:` / `## PAST:` セクション、または比較 table を含む。
+
+**Prompt fold**:
+
+1. 引数 path を `Read` で全文取得
+2. **NEW (新提案) と PAST (過去案件)** の 2 ブロックを section heading or table で識別
+3. 比較対象軸を抽出 (典型: 価格 / 納期 / SLA / オプション機能 / 契約条項 / サポート範囲 / 担当)。table 形式があれば 1 列ずつ突合
+4. 各軸の差分を以下の 3 要素で評価:
+   - **diff**: NEW と PAST の値 + 変化の方向 (例: `$30,000 → $45,000 (+50%)`)
+   - **重要度**: `HIGH` (顧客満足 / リスクに直結) / `MEDIUM` (運用影響あり) / `LOW` (cosmetic)
+   - **推奨**: `取り込み推奨` / `却下推奨` / `要検討` + 1-2 行の理由 (PAST の振り返り = 成功/失敗 を根拠として明示)
+5. 結果を Markdown table で structured output:
+
+   ```markdown
+   ## 提案 diff & 推奨
+
+   | # | 項目 | NEW | PAST | 差分 | 重要度 | 推奨 | 理由 |
+   |---|------|-----|------|------|--------|------|------|
+   | 1 | 価格 | $45,000 | $30,000 | +$15,000 (+50%) | HIGH | 要検討 | 顧客規模差を反映するが、PAST 比 50% 増は justification 要 |
+   | 2 | 納期 | 4ヶ月 | 3ヶ月 | +1ヶ月 | MEDIUM | 要検討 | multi-tenant 対応で +1ヶ月妥当だが、競合提案次第 |
+   | 3 | SLA | 99.9% | 99.5% | +0.4pt | HIGH | 取り込み推奨 | 大規模顧客は 99.9% 期待、PAST は 99.5% で十分だった (NPS 8.5) ことを踏まえても upgrade は market 整合 |
+   | ... | ... | ... | ... | ... | ... | ... | ... |
+   ```
+
+6. 末尾に **取り込み推奨セクション** (推奨 = 取り込み推奨 行のみ抜粋した action list) と **却下推奨セクション** (リスク警告) を別 markdown heading で提示
+7. PAST に振り返り (成功/失敗の教訓) があれば、推奨理由欄で literal 引用
+
+**Acceptance**:
+- 上記 fixture で **5 件以上** の diff table 行を生成
+- 各行に 重要度 (HIGH/MEDIUM/LOW) + 推奨 (取り込み / 却下 / 要検討) が明記されている
+- 推奨理由欄に PAST の「成功した部分」「失敗した部分」「教訓」を 1 件以上引用
+
+---
+
+### Sub-mode 3: `--slack-tldr`
+
+**Input contract**: JP Slack thread の markdown (例: `tests/fixtures/sb-synthesize/jp-slack-thread.md`)。**`<人名>**` (太字) + 時刻 + メッセージ本文の繰り返し構造、frontmatter `translate_to_en: true` で EN 併記要求。
+
+**Prompt fold**:
+
+1. 引数 path を `Read` で全文取得
+2. frontmatter の `translate_to_en` を確認 (true なら EN 翻訳 alias 必須)
+3. thread の発言を時系列に追い、以下を判定:
+   - **議題の核**: thread が主に何を扱っているか
+   - **決着**: 決まったこと / 結論 (なければ「未決着」)
+   - **残課題**: 次アクション or open question
+4. 上記を **3-5 行** の日本語 TL;DR に圧縮:
+
+   ```markdown
+   ### TL;DR (JP)
+   <3-5 行で議題の核 + 決着 + 残課題を要約>
+   ```
+
+5. `translate_to_en: true` なら直後に EN translation alias (同 3-5 行 EN):
+
+   ```markdown
+   ### TL;DR (EN translation alias)
+   <same content in EN, 3-5 lines>
+   ```
+
+6. 関係者 list を生成 (thread 内の `[[人名]]` or 太字人名を全件抽出、重複排除)。各人について **1 行で立場・役割** を本文発言から推論:
+
+   ```markdown
+   ### 関係者 (N 名)
+   - [[田中]]: リリース PM、QA gate 主催、go/no-go 判定責任者
+   - [[佐藤]]: マーケ側責任者、press release / LP 公開担当
+   - [[鈴木]]: インフラ責任者、認証 token P1 修正担当
+   - [[高橋]]: ドキュメント責任者、β版 walkthrough 日英対応
+   ```
+
+7. URL や file path への literal 言及があれば末尾に「### 参照 link」として保持 (verbatim)
+
+**Acceptance**:
+- TL;DR (JP) が **3-5 行** に収まっている
+- frontmatter `translate_to_en: true` の時のみ EN translation alias を出力 (同じ 3-5 行構造)
+- 関係者 list が **thread 内の全人物** を漏れなく抽出 (上記 fixture では 4 名: [[田中]] [[佐藤]] [[鈴木]] [[高橋]])
+- 各関係者の立場が 1 行で具体的に明記されている (役職名のみは NG、本文発言から推論した役割)
+
+---
+
+### 共通設計原則 (3 sub-mode 全て)
+
+- **Read-only on input file**: input path に対する `Edit`/`Write` は禁止。output は **本 ターンの assistant message** に Markdown で直接出力する (新規 wiki page を作る必要があるかは user 判断)
+- **JP 出力デフォルト**: `--slack-tldr` の EN alias 以外、出力は全て日本語
+- **存在しない値は省略しない**: `期日: 未指定` のように literal で「未指定」を明記。silently 空欄にしない
+- **wikilink 保持**: input に `[[人名]]` がある場合、output でも `[[人名]]` 形式を維持
+
+### Mutually exclusive 制約
+
+複数 flag を同時指定された場合 (例: `--meeting-commitments --proposal-diff <path>`) は以下を出力して 1 sub-mode のみ実行する:
 
 ```
-[sb-synthesize] sub-mode "<flag>" is not wired yet. Wave 2 (Phase 2.3) will connect the prompt fold. See skills/sb-synthesize/SKILL.md "JP Sub-mode Hook" section.
+[sb-synthesize] 複数 sub-mode flag は同時指定不可。最初に指定された flag のみ実行します。
 ```
-
-### Wave 2 接続契約 (Phase 2.3 connector が満たすべき仕様)
-
-Wave 2 で `executor opus` が本 SKILL.md に以下を追記する想定:
-
-| Flag | Sub-mode 名 | Fixture (Wave 2 で追加) | Acceptance |
-|---|---|---|---|
-| `--meeting-commitments` | meeting-commitments | `tests/fixtures/sb-synthesize/jp-meeting-minutes.md` | commitment / 期日 / 担当 を抽出した structured output |
-| `--proposal-diff` | proposal-diff | `tests/fixtures/sb-synthesize/jp-proposal-vs-past.md` | 新旧 diff + 推奨セクション提示 |
-| `--slack-tldr` | slack-tldr | `tests/fixtures/sb-synthesize/jp-slack-thread.md` | TL;DR + 関係者 + EN 翻訳 alias |
-
-### Stub 実装 (本 shell)
-
-`run_jp_submode(name)` 関数の現状実装:
-
-```text
-function run_jp_submode(name):
-    error_message = '[sb-synthesize] sub-mode "--' + name + '" is not wired yet. ' +
-                    'Wave 2 (Phase 2.3) will connect the prompt fold. ' +
-                    'See skills/sb-synthesize/SKILL.md "JP Sub-mode Hook" section.'
-    print(error_message) to stderr
-    exit(1)
-```
-
-Wave 2 connector はこの関数を **置き換える** のではなく、stub の `print + exit` を **削除し** sub-mode 別の prompt fold を inject する。stub を残したまま新 fold を追加する形は禁止 (silent override が起きる)。
-
-### Connector が探す target string
-
-Wave 2 connector は本 SKILL.md 内で以下の文字列を grep する:
-
-- `[sb-synthesize] sub-mode "--meeting-commitments" is not wired yet.`
-- `[sb-synthesize] sub-mode "--proposal-diff" is not wired yet.`
-- `[sb-synthesize] sub-mode "--slack-tldr" is not wired yet.`
-
-これらが Wave 2 完了後の SKILL.md には **存在しない** ことが connector の self-check になる。
 
 ---
 
@@ -224,7 +321,7 @@ Wave 2 connector は本 SKILL.md 内で以下の文字列を grep する:
 # 既定 (4 fold)
 /sb-synthesize
 
-# JP sub-mode (Wave 2 接続後)
+# JP sub-mode (Wave 2 接続済)
 /sb-synthesize --meeting-commitments tests/fixtures/sb-synthesize/jp-meeting-minutes.md
 /sb-synthesize --proposal-diff tests/fixtures/sb-synthesize/jp-proposal-vs-past.md
 /sb-synthesize --slack-tldr tests/fixtures/sb-synthesize/jp-slack-thread.md
@@ -232,11 +329,25 @@ Wave 2 connector は本 SKILL.md 内で以下の文字列を grep する:
 
 ---
 
-## TDD acceptance (Phase 3.3、本 task)
+## TDD acceptance
 
-`tests/fixtures/sb-synthesize/cross-source/` 配下 3 page (`podcast-transcript.md` / `article-summary.md` / `daily-note.md`) と `tests/fixtures/sb-synthesize/orphan-rescue/` 配下 2 page (`orphan-concept.md` / `orphan-entity.md`) が、各 fold の最小起動 input になる。
+### Phase 3.3 (default 4 fold shell)
 
-`bash tests/run-fixtures.sh wave1` で `cross-source-dir` / `orphan-rescue-dir` の存在確認が PASS することを Phase 3.3 完了条件とする (Phase 2.3 fixture は Wave 2 で追加)。
+`tests/fixtures/sb-synthesize/cross-source/` 配下 3 page (`podcast-transcript.md` / `article-summary.md` / `daily-note.md`) と `tests/fixtures/sb-synthesize/orphan-rescue/` 配下 2 page (`orphan-concept.md` / `orphan-entity.md`) が、各 fold の最小起動 input。
+
+`bash tests/run-fixtures.sh wave1` で `cross-source-dir` / `orphan-rescue-dir` の存在確認が PASS することを完了条件とする。
+
+### Phase 2.3 (JP sub-modes、本接続)
+
+`tests/fixtures/sb-synthesize/` 配下 3 fixture が各 sub-mode の最小起動 input:
+
+| Flag | Fixture | Acceptance (本 SKILL.md 内 prompt fold が満たす設計) |
+|---|---|---|
+| `--meeting-commitments` | `jp-meeting-minutes.md` | 4 件以上の commitment table 行 (3 列: commitment / 期日 / 担当)、「保留」「議論のみ」を除外 |
+| `--proposal-diff` | `jp-proposal-vs-past.md` | 5 件以上の diff table 行 (重要度 + 推奨 + PAST 教訓引用) |
+| `--slack-tldr` | `jp-slack-thread.md` | TL;DR 3-5 行 (JP) + EN translation alias (translate_to_en: true) + 関係者 4 名各 1 行立場明記 |
+
+`bash tests/run-fixtures.sh wave2` で 3 fixture の存在確認が PASS することを Phase 2.3 完了条件とする。
 
 ---
 
