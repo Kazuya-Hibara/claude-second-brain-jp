@@ -22,11 +22,15 @@ Work through these in order:
 3. **Stale claims**. Assertions on older pages that newer sources have contradicted or updated.
 4. **Missing pages**. Concepts or entities mentioned in multiple pages but lacking their own page.
 5. **Missing cross-references**. Entities mentioned in a page but not linked.
-6. **Frontmatter gaps**. Pages missing required fields (type, status, created, updated, tags).
+6. **Frontmatter gaps**. Pages missing required fields (type, status, created, updated, tags, **Status, Last-verified, Half-life**).
 7. **Empty sections**. Headings with no content underneath.
 8. **Stale index entries**. Items in `wiki/index.md` pointing to renamed or deleted pages.
-9. **Address validity** (DragonScale Mechanism 2). For every page that has an `address:` frontmatter field, validate the format. See the **Address Validation** section below.
-10. **Semantic tiling** (DragonScale Mechanism 3, opt-in). Flag candidate duplicate pages (across all scanned types, not just concepts) via embedding cosine similarity. See the **Semantic Tiling** section below.
+9. **Memory Freshness Gate** (Phase 2.6). For every page with `Status` / `Last-verified` / `Half-life` frontmatter, check `(today - Last-verified) > Half-life`. See the **Memory Freshness Check** section below.
+10. **Append-only Anti-pattern** (Phase 4.2). Detect ingests where new pages were created but no existing pages were updated. Karpathy rewrite principle violation. See the **Append-only Anti-pattern Check** section below.
+11. **Hot Cache Length** (Phase 2.4). Verify `wiki/hot.md` ≤ 300 words, `wiki/hot-domain-*.md` ≤ 300 words, `wiki/hot-week.md` ≤ 500 words. `wiki/index.md` 1 entry ≤ 15 chars.
+12. **Business Hours Compliance** (Phase 2.5). If `business_hours` schema is set in CLAUDE.md, check `log.md` timestamps for scheduled-agent activity inside business hours.
+13. **Address validity** (DragonScale Mechanism 2). For every page that has an `address:` frontmatter field, validate the format. See the **Address Validation** section below.
+14. **Semantic tiling** (DragonScale Mechanism 3, opt-in). Flag candidate duplicate pages (across all scanned types, not just concepts) via embedding cosine similarity. See the **Semantic Tiling** section below.
 
 ---
 
@@ -70,6 +74,95 @@ status: developing
 ## Cross-Reference Gaps
 - [[Entity Name]] mentioned in [[Page A]] without a wikilink.
 ```
+
+---
+
+## Memory Freshness Check (Phase 2.6)
+
+For every wiki page that has freshness frontmatter (`Status` / `Last-verified` / `Half-life`):
+
+### Checks
+
+1. **Frontmatter completeness**: 3 fields all present? Missing any = 🟡 WARN
+2. **Half-life expiration**: `(today - Last-verified) > Half-life`?
+   - Yes → 🟡 WARN, suggest re-verification or `Status: SUPERSEDED` if known stale
+3. **Long-running HYPOTHESIS**: `Status: HYPOTHESIS` AND `(today - created) > 30d`?
+   - Yes → 🟡 WARN, hypothesis has been pending too long; either confirm (→ ACTIVE) or remove
+4. **SUPERSEDED orphans**: `Status: SUPERSEDED` but no `superseded_by:` field?
+   - Yes → 🟡 WARN, superseded pages must point at their replacement
+
+### Output section
+
+```markdown
+## Memory Freshness
+
+- Pages checked: N
+- Frontmatter complete: X / N
+- Stale (past Half-life): Y
+- Long-running HYPOTHESIS: Z
+- SUPERSEDED orphans: W
+
+### Stale (re-verify or supersede)
+- [[Page Name]]: Last-verified 2026-04-01, Half-life 14d (= 19d overdue). Status: ACTIVE. Suggest: re-run cheap-disproof or mark SUPERSEDED.
+
+### Long-running HYPOTHESIS
+- [[Page Name]]: created 2026-03-20 (45d ago), Status: HYPOTHESIS. Suggest: confirm (→ ACTIVE) or remove.
+
+### SUPERSEDED orphans
+- [[Page Name]]: Status: SUPERSEDED but missing superseded_by: field. Suggest: add reference or restore Status.
+
+### Frontmatter gaps (memory freshness)
+- [[Page Name]]: missing Status / Last-verified / Half-life. Required for memory freshness gate.
+```
+
+### Auto-fix policy
+
+- **Safe**: For pages missing frontmatter freshness fields, auto-add `Status: ACTIVE`, `Last-verified: <today>`, `Half-life: 30d` (default). Show preview, confirm, then apply.
+- **Needs review**: Marking a page SUPERSEDED, removing a long-running HYPOTHESIS — never auto, always ask.
+
+---
+
+## Append-only Anti-pattern Check (Phase 4.2)
+
+Karpathy LLM Wiki principle: **REWRITE the vault — don't just append**. If ingests consistently create new pages but never update existing ones, the wiki degenerates into an append-only graveyard.
+
+### Detection
+
+Read `wiki/log.md`. For each ingest entry, parse:
+
+```
+## [YYYY-MM-DD] ingest | Source Title
+- Pages created: [[Page 1]], [[Page 2]]
+- Pages updated: [[Page 3]], [[Page 4]]
+```
+
+### Rules
+
+1. **Per-ingest**: any ingest where `Pages updated:` is empty (or missing) AND `Pages created:` ≥ 2 = ⚪ INFO (single-source append is sometimes legit)
+2. **Trend**: 3+ consecutive ingests with empty `Pages updated:` = 🟡 WARN (rewrite discipline degrading)
+3. **Aggregate**: over the last 10 ingests, if `total pages_created / total pages_updated > 5` = 🟡 WARN (creating 5x more than updating; vault is sprawling without compounding)
+
+### Output section
+
+```markdown
+## Append-only Anti-pattern (Karpathy compliance)
+
+- Ingests scanned (last 10): N
+- Pages created (total): X
+- Pages updated (total): Y
+- Create-to-update ratio: X/Y = R (target: ≤ 2.0)
+
+### Findings
+- 🟡 WARN: Last 5 ingests had empty `Pages updated:` — rewrite discipline degrading.
+  Consider: re-read recent ingests' source files and run a manual rewrite pass.
+- ⚪ INFO: Ingest 2026-04-29 ("Foo Source") created 8 pages, updated 0.
+  Source may be a greenfield import (legitimate exception).
+```
+
+### Auto-fix policy
+
+- This check is **diagnostic only**. Auto-fix is not appropriate (rewriting requires source re-read and judgement).
+- Recommend: queue affected sources for **rewrite pass** via `/wiki-ingest --rewrite-only [source]` (Phase 2.6 tooling, deferred).
 
 ---
 

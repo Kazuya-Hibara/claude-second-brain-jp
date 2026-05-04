@@ -11,6 +11,27 @@ Read the source. Write the wiki. Cross-reference everything. A single source typ
 
 ---
 
+## Karpathy Spec — REWRITE THE VAULT
+
+> **REWRITE the vault — this is the critical step. Don't just create new pages. Rewrite existing ones.**
+
+This is the literal Karpathy LLM Wiki principle and the primary reason for ingesting in the first place. Each new source is an opportunity to **update entities, refine concepts, supersede stale claims, and tighten cross-references** in pages that already exist. Append-only ingest (= "create new page, never touch old ones") is an anti-pattern — it produces a sprawling wiki with no compounding value.
+
+When you ingest a source, run **4 parallel rewrite passes** on the existing vault as part of step 4-7 of Single Source Ingest:
+
+1. **Entities pass** — for every person/org/product mentioned, **update** existing entity pages with new context. New facts, recent dates, refined relationships. Do not create a duplicate; merge into the existing page if one exists.
+2. **Concepts pass** — for significant ideas/frameworks, **update** existing concept pages with the new source's reframing or counterexamples. Add `> [!key-insight]` callouts where the new source crystallizes something previously fuzzy.
+3. **Projects pass** — for ongoing projects/engagements, **update** the project page with new commitments, decisions, deliverables. Refresh `Status` / `Last-verified` frontmatter.
+4. **Contradictions pass** — explicitly look for claims in existing pages that the new source contradicts. Use `> [!contradiction]` callouts on **both** sides (new source page and existing page). Do not silently overwrite.
+
+**Acceptance test for a healthy ingest**:
+- pages_updated count ≥ pages_created count (= rewrite is happening, not just append)
+- log.md entry includes both `Pages created:` and `Pages updated:` lists, both non-empty for non-trivial sources
+
+If `pages_updated` is empty for 3 consecutive ingests, the wiki is degenerating into an append-only graveyard. `/wiki-lint` will WARN on this pattern (Phase 4.2 append-only anti-pattern check).
+
+---
+
 ## Delta Tracking
 
 Before ingesting any file, check `.raw/.manifest.json` to avoid re-processing unchanged sources.
@@ -102,14 +123,15 @@ Steps:
 
 1. **Read** the source completely. Do not skim.
 2. **Discuss** key takeaways with the user. Ask: "What should I emphasize? How granular?" Skip this if the user says "just ingest it."
-3. **Create** source summary in `wiki/sources/`. Use the source frontmatter schema from `references/frontmatter.md`. Assign an address per the **Address Assignment** section below.
-4. **Create or update** entity pages for every person, org, product, and repo mentioned. One page per entity. Assign addresses to new entity pages.
-5. **Create or update** concept pages for significant ideas and frameworks. Assign addresses to new concept pages.
+3. **Create** source summary in `wiki/sources/`. Use the source frontmatter schema from `references/frontmatter.md`. **Always include memory freshness fields** (`Status: ACTIVE`, `Last-verified: <today>`, `Half-life: <30d|14d|90d>` per category — see CLAUDE.md). Assign an address per the **Address Assignment** section below.
+4. **Create or update** entity pages for every person, org, product, and repo mentioned. **Update existing pages first** (Karpathy rewrite principle); create new only if no existing page matches. New pages MUST include freshness frontmatter; updated pages MUST refresh `Last-verified: <today>` and re-evaluate `Status`. Assign addresses to new entity pages.
+5. **Create or update** concept pages for significant ideas and frameworks. Same rule: update before create, refresh `Last-verified` on touch. Assign addresses to new concept pages.
 6. **Update** relevant domain page(s) and their `_index.md` sub-indexes.
 7. **Update** `wiki/overview.md` if the big picture changed.
-8. **Update** `wiki/index.md`. Add entries for all new pages.
-9. **Update** `wiki/hot.md` with this ingest's context.
-10. **Append** to `wiki/log.md` (new entries at the TOP):
+8. **Update** `wiki/index.md`. Add entries for all new pages. **Each entry max 15 chars** (CLAUDE.md style rule).
+9. **Update** `wiki/hot.md` with this ingest's context. **Keep ≤ 300 words total** (CLAUDE.md style rule). Overflow drains to `wiki/hot-week.md` (≤ 500 words).
+10. **Update** the relevant `wiki/hot-domain-{X}.md` if the source belongs to a recognized domain (顧客 / 案件 / 提案 / 業務 等). **Keep ≤ 300 words**.
+11. **Append** to `wiki/log.md` (new entries at the TOP):
     ```markdown
     ## [YYYY-MM-DD] ingest | Source Title
     - Source: `.raw/articles/filename.md`
@@ -118,7 +140,33 @@ Steps:
     - Pages updated: [[Page 3]], [[Page 4]]
     - Key insight: One sentence on what is new.
     ```
-11. **Check for contradictions.** If new info conflicts with existing pages, add `> [!contradiction]` callouts on both pages.
+12. **Check for contradictions.** If new info conflicts with existing pages, add `> [!contradiction]` callouts on both pages. Mark old claim's `Status: SUPERSEDED` with `superseded_by: [[New Page]]` if the new source decisively replaces it.
+
+### Required frontmatter for new pages (memory freshness gate)
+
+```yaml
+---
+type: concept | entity | project | decision | source
+title: "ページ名"
+created: 2026-05-05
+updated: 2026-05-05
+tags: [domain/foo]
+Status: ACTIVE       # ACTIVE | RESOLVED | SUPERSEDED | HYPOTHESIS
+Last-verified: 2026-05-05
+Half-life: 30d       # 14d (CLI/SDK) | 30d (API/workflow) | 90d (infra/decisions)
+---
+```
+
+| Page type | Default Half-life |
+|---|---|
+| External CLI / SDK / tool reference | `14d` |
+| API / SaaS / workflow doc | `30d` |
+| Infrastructure / OS / Claude Code harness | `90d` |
+| Meeting minutes / ADR / decisions | `90d` |
+| Entity (person / org / product) | `30d` |
+| Concept / framework | `90d` |
+
+If a page's category is unclear, default to `30d`. `Status: HYPOTHESIS` if the source is speculative (research preview, draft proposal); upgrade to `ACTIVE` after confirmation.
 
 ---
 
