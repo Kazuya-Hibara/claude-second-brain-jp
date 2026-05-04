@@ -2,6 +2,30 @@
 
 All notable changes to **claude-second-brain-jp** (JP fork) and the upstream **claude-obsidian** lineage that preceded it. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/) + JP fork suffix `-jp.N`.
 
+## [0.1.0] - 2026-05-05 (v0.1.0 — Phase 1-5 完了)
+
+`claude-second-brain-jp` v0.1.0 リリース。Wave 1 で追加した 5 コマンド (sb-doctor / sb-reconcile / sb-synthesize / sb-graduate-meeting / sb-ingest) と JP ビジネス preset (sb-synthesize 3 サブモード) が全て統合済み。Self-hosted distribution 対応 (`claude plugin marketplace add {{INSTALL_PATH}}`)。
+
+commit: `{{COMMIT_SHA}}`
+
+### Added
+
+- `/sb-doctor` — 8 カテゴリ健全性診断 (frontmatter compliance / memory freshness / hot.md size / index.md line length / append-only pattern / time-window guard / business_hours / orphan detection)。Severity 🔴 CRITICAL / 🟡 WARN / ⚪ INFO の 3 段階。eug `obsidian-health` を JP 向けに移植・拡張。
+- `/sb-reconcile` — wiki ページ間の矛盾を evidence-based で自動調停。明確な根拠がある場合は自動 winner 確定 + 敗者を `## History` セクションに保持。ambiguous な場合はユーザー確認 (`--evidence-only` フラグで確認省略可)。eug `obsidian-reconcile` を移植。
+- `/sb-synthesize` — 4 並列 fold (cross-source / entity convergence / concept evolution / orphan rescue) で知識を横断合成。JP ビジネスサブモード 3 種 (`--meeting-commitments` / `--proposal-diff` / `--slack-tldr`) を統合。eug `obsidian-synthesize` を移植・拡張。
+- `/sb-graduate-meeting` — 議事録の決定事項 (「〜と決定」「〜が承認」構文) を検出し、`wiki/decisions/YYYY-MM-DD-<slug>.md` に ADR フォーマットで自動書き出し。複数決定事項は 1 件 = 1 ADR ファイル (suffix `-<N>`)。元議事録に `Graduated-to:` frontmatter を追記。
+
+### Renamed
+
+- `wiki-ingest` → `sb-ingest` — エージェント名 (`agents/wiki-ingest.md` → `agents/sb-ingest.md`) とスキル (`skills/wiki-ingest/` → `skills/sb-ingest/`) を統一。JP/EN 自動言語判定と frontmatter `aliases:` 自動生成を追加。
+
+### Distribution
+
+- `.claude-plugin/marketplace.json` を v0.1.0 向けに整備。`claude plugin marketplace add {{INSTALL_PATH}}` による self-hosted subscribe 対応。
+- `.claude-plugin/plugin.json` version `0.1.0-jp.1` → `0.1.0`。
+
+---
+
 ## [0.1.0-jp.1] - 2026-05-05 (JP fork — Phase 1 + Phase 2 部分 + Phase 4)
 
 `claude-second-brain-jp` initial release. Forked from upstream `AgriciDaniel/claude-obsidian@v1.6.0` (MIT). JP 経営者 / 1-5 名法人向けに schema preset + small-context optimization + memory freshness gate + Karpathy compliance fix を追加。

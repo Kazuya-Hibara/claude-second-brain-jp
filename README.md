@@ -1,396 +1,175 @@
 
 # claude-second-brain-jp
 
-> **Status**: v0.1.0-jp.1 (Phase 1 — fork + attribution only)
+> **Status**: v0.1.0 (Phase 1-5 完了)
 > **Forked from**: [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (MIT)
 > **Maintainer**: [Kazuya Hibara](https://github.com/Kazuya-Hibara) — `contact@kazuyahibara.com`
-> **Differentiation**: 日本語ビジネス preset (議事録 / 提案書 / 受託案件 / Slack 翻訳) + 5-layer hot cache + 業務時間外 cron + memory freshness gate。Phase 2-5 (JP-specific additions) は別 milestone で実装予定。
-
-JP 経営者向け Claude + Obsidian 第二の脳プラグイン。Karpathy LLM Wiki pattern を **JP solo founder / 1-5 名法人** の小 context window 向けに最適化。
-
-下記 README は upstream `AgriciDaniel/claude-obsidian` の内容を一時保持 (Phase 1 attribution-only) しています。JP 化された README は Phase 5 (Publish) で全面差し替え予定。
-
----
-
-<p align="center">
-  <img src="wiki/meta/claude-obsidian-gif-cover-16x9.gif" alt="claude-obsidian" width="100%" />
-</p>
 
 [![Forked from](https://img.shields.io/badge/Forked_from-AgriciDaniel%2Fclaude--obsidian-orange)](https://github.com/AgriciDaniel/claude-obsidian)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-8B5CF6)](https://code.claude.com/docs/en/discover-plugins)
-[![Status](https://img.shields.io/badge/Status-Phase_1_attribution--only-yellow)](https://github.com/Kazuya-Hibara/claude-second-brain-jp)
-
-Claude + Obsidian knowledge companion. A running notetaker that builds and maintains a persistent, compounding wiki vault. Every source you add gets integrated. Every question you ask pulls from everything that has been read. Knowledge compounds like interest.
-
-Based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). **11 skills. Zero manual filing. Multi-agent support. Optional [DragonScale Memory](docs/dragonscale-guide.md) extension** (log folds, deterministic page addresses, semantic tiling lint, boundary-first autoresearch).
+[![Version](https://img.shields.io/badge/Version-v0.1.0-green)](https://github.com/Kazuya-Hibara/claude-second-brain-jp/releases/tag/v0.1.0)
 
 ---
 
-## What It Does
-### [Youtube Demo](https://www.youtube.com/watch?v=a2hgayvr-H4)
-<p align="center">
-  <img src="wiki/meta/welcome-canvas.gif" alt="Welcome canvas. Visual demo board" width="96%" />
-</p>
+## 日本語
 
-You drop sources. Claude reads them, extracts entities and concepts, updates cross-references, and files everything into a structured Obsidian vault. The wiki gets richer with every ingest.
+JP 経営者 / 1-5 名法人向け Claude + Obsidian 第二の脳プラグイン。[Karpathy LLM Wiki パターン](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) を **小 context window** と **日本語ビジネスワーク** 向けに最適化。
 
-You ask questions. Claude reads the hot cache (recent context), scans the index, drills into relevant pages, and synthesizes an answer. It cites specific wiki pages, not training data.
+### なぜ claude-second-brain-jp か
 
-You lint. Claude finds orphans, dead links, stale claims, and missing cross-references. Your wiki stays healthy without manual cleanup.
+汎用の Obsidian AI プラグインは「既存ノートへの質問」に特化している。本プラグインは知識を **自律的に構築・維持・進化** させる。さらに日本の経営現場特有のワーク (議事録 → ADR 変換、提案書差分比較、Slack JP スレッド要約) を組み込み専用コマンドとして提供する。
 
-At the end of every session, Claude updates a hot cache. The next session starts with full recent context, no recap needed.
+| 機能 | claude-second-brain-jp | 汎用 AI プラグイン |
+|---|---|---|
+| **5-layer hot cache** | wiki/hot.md から wiki/<page>.md まで 5 段階を自動管理 | なし |
+| **JP ビジネス preset** | 議事録 / 提案書 / 受託案件 / Slack 翻訳 専用コマンド | なし |
+| **業務時間外ガード** | `business_hours` フィールドで cron を制限 | なし |
+| **memory freshness gate** | `Status / Last-verified / Half-life` で陳腐化を検出 | なし |
+| **Karpathy literal 準拠** | 新規作成だけでなく既存ページの rewrite を強制 | まちまち |
+| **矛盾検出 + 調停** | `/sb-reconcile` で evidence-based winner 自動判定 | なし |
+| **Wiki 健全性診断** | `/sb-doctor` で 8 カテゴリ Severity 付き診断 | なし |
+| **自律知識合成** | `/sb-synthesize` で 4 並列 fold + JP サブモード | なし |
 
-<p align="center">
-  <img src="wiki/meta/image-example-graph-view.png" alt="Graph view. Color-coded wiki nodes" width="48%" />
-  <img src="wiki/meta/image-example-wiki-map-view.png" alt="Wiki Map canvas" width="48%" />
-</p>
+### クイックスタート (5 分インストール)
 
----
-
-## Why claude-obsidian?
-
-Most Obsidian AI plugins are chat interfaces - they answer questions about your existing notes. claude-obsidian is a knowledge engine - it creates, organizes, maintains, and evolves your notes autonomously.
-
-| Capability | claude-obsidian | Smart Connections | Copilot |
-|---|---|---|---|
-| **Auto-organize notes** | Creates entities, concepts, cross-references | No | No |
-| **Contradiction flagging** | `[!contradiction]` callouts with sources | No | No |
-| **Session memory** | Hot cache persists between conversations | No | No |
-| **Vault maintenance** | 8-category lint (orphans, dead links, gaps) | No | No |
-| **Autonomous research** | 3-round web research with gap-filling | No | No |
-| **Multi-model support** | Claude, Gemini, Codex, Cursor, Windsurf | Claude only | Multiple |
-| **Visual canvas** | Via [claude-canvas](https://github.com/AgriciDaniel/claude-canvas) companion | No | No |
-| **Query with citations** | Cites specific wiki pages | Cites similar notes | Cites notes |
-| **Batch ingestion** | Parallel agents for multiple sources | No | No |
-| **Open source** | MIT | MIT | Freemium |
-
-> **Deep dive:** [I Turned Obsidian Into a Self-Organizing AI Brain](https://agricidaniel.com/blog/claude-obsidian-ai-second-brain) - full breakdown with data visualizations, market context, and workflow demos.
-
----
-
-## Quick Start
-
-### Option 1: Clone as vault (recommended: full setup in 2 minutes)
+**Step 1: プラグインを追加**
 
 ```bash
-git clone https://github.com/AgriciDaniel/claude-obsidian
-cd claude-obsidian
-bash bin/setup-vault.sh
+claude plugin marketplace add {{INSTALL_PATH}}
 ```
 
-Open the folder in Obsidian: **Manage Vaults → Open folder as vault → select `claude-obsidian/`**
-
-Open Claude Code in the same folder. Type `/wiki`.
-
-> `setup-vault.sh` configures `graph.json` (filter + colors), `app.json` (excludes plugin dirs), and `appearance.json` (enables CSS). Run it once before the first Obsidian open. You get the fully pre-configured graph view, color scheme, and wiki structure out of the box.
-
----
-
-### Option 2: Install as Claude Code plugin
-
-Plugin installation is a two-step process in Claude Code. First add the marketplace catalog, then install the plugin from it.
+**Step 2: プラグインをインストール**
 
 ```bash
-# Step 1: add the marketplace
-claude plugin marketplace add AgriciDaniel/claude-obsidian
-
-# Step 2: install the plugin
-claude plugin install claude-obsidian@claude-obsidian-marketplace
+claude plugin install claude-second-brain-jp@claude-second-brain-jp-marketplace
 ```
 
-In any Claude Code session: `/wiki`. Claude walks you through vault setup.
+**Step 3: Obsidian vault を開く**
 
-To check it worked:
+Obsidian で vault フォルダを開き、Claude Code を同じフォルダで起動する。
+
+**Step 4: 初期化**
+
+Claude Code セッションで入力:
+
+```
+/wiki
+```
+
+Claude が vault の設定チェック → scaffold → 使い方案内の順で起動する。
+
+インストール確認:
+
 ```bash
 claude plugin list
 ```
 
----
+### 主要コマンド
 
-### Option 3: Add to an existing vault
+| コマンド | 動作 |
+|---------|------|
+| `/wiki` | vault セットアップ確認 / scaffold / 継続 |
+| `/sb-ingest [ファイル]` | JP/EN 自動判定でソースを取り込み、8-15 wiki ページを生成 |
+| `/sb-doctor` | 8 カテゴリ健全性診断 (frontmatter / freshness / hot.md サイズ / index 行長 / append-only / time-window / business_hours / orphan) |
+| `/sb-reconcile` | 矛盾ページを evidence-based で自動調停 |
+| `/sb-synthesize` | 4 並列 fold で知識を横断合成 |
+| `/sb-graduate-meeting` | 議事録の決定事項を ADR として `wiki/decisions/` へ自動昇格 |
+| `/save` | 現在の会話を wiki ノートとして保存 |
+| `/autoresearch [トピック]` | 自律 web 調査ループ: 検索 → 取得 → 合成 → 保存 |
 
-Copy `WIKI.md` into your vault root. Paste into Claude:
+### 機能ハイライト
+
+**5-layer hot cache**
 
 ```
-Read WIKI.md in this project. Then:
-1. Check if Obsidian is installed. If not, install it.
-2. Check if the Local REST API plugin is running on port 27124.
-3. Configure the MCP server.
-4. Ask me ONE question: "What is this vault for?"
-Then scaffold the full wiki structure.
+Layer 1: wiki/hot.md            ~300 words   全体サマリ (セッション間コンテキスト)
+Layer 2: wiki/hot-domain-{X}.md ~300 words   ドメイン別 (顧客 / 案件 / 提案 / 業務)
+Layer 3: wiki/hot-week.md       ~500 words   週次集約
+Layer 4: wiki/index.md          1 行 ≤ 15 文字  カテゴリ別カタログ
+Layer 5: wiki/<page>.md         page-level   個別ページ
 ```
 
----
+Claude は質問に答える際、Layer 1 から順に読み進め、必要最小限のコンテキストで動作する。小 context window (Claude Haiku 等) でも高精度を維持。
 
-## Commands
+**JP ビジネス preset**
 
-| You say | Claude does |
-|---------|------------|
-| `/wiki` | Setup check, scaffold, or continue where you left off |
-| `ingest [file]` | Read source, create 8-15 wiki pages, update index and log |
-| `ingest all of these` | Batch process multiple sources, then cross-reference |
-| `what do you know about X?` | Read index > relevant pages > synthesize answer |
-| `/save` | File the current conversation as a wiki note |
-| `/save [name]` | Save with a specific title (skips the naming question) |
-| `/autoresearch [topic]` | Run the autonomous research loop: search, fetch, synthesize, file |
-| `/canvas` | Open or create the visual canvas, list zones and nodes |
-| `/canvas add image [path]` | Add an image (URL or local path) to the canvas with auto-layout |
-| `/canvas add text [content]` | Add a markdown text card to the canvas |
-| `/canvas add pdf [path]` | Add a PDF document as a rendered preview node |
-| `/canvas add note [page]` | Pin a wiki page as a linked card on the canvas |
-| `/canvas zone [name]` | Add a new labeled zone to organize visual content |
-| `/canvas from banana` | Capture recently generated images onto the canvas |
-| `lint the wiki` | Health check: orphans, dead links, gaps, suggestions |
-| `update hot cache` | Refresh hot.md with latest context summary |
+`/sb-synthesize` のサブモードで日本語ビジネス文書を処理:
 
-> **Want more?** [claude-canvas](https://github.com/AgriciDaniel/claude-canvas) adds 12 templates, 6 layout algorithms, AI image generation, presentations, and full canvas orchestration. Install both — they complement each other.
+- `--meeting-commitments`: 議事録から決定事項 / 期日 / 担当を構造化抽出
+- `--proposal-diff`: 提案書と過去案件 wiki を比較し、推奨セクションを提示
+- `--slack-tldr`: JP Slack スレッドを要約 + 関係者整理 + EN 翻訳
 
----
+詳細: [docs/jp-business-presets.md](docs/jp-business-presets.md)
 
-## Cross-Project Power Move
+**業務時間外ガード**
 
-Point any Claude Code project at this vault. Add to that project's `CLAUDE.md`:
-
-```markdown
-## Wiki Knowledge Base
-Path: ~/path/to/vault
-
-When you need context not already in this project:
-1. Read wiki/hot.md first (recent context cache)
-2. If not enough, read wiki/index.md
-3. If you need domain details, read the relevant domain sub-index
-4. Only then drill into specific wiki pages
-
-Do NOT read the wiki for general coding questions or tasks unrelated to [domain].
-```
-
-Your executive assistant, coding projects, and content workflows all draw from the same knowledge base.
-
----
-
-## Six Wiki Modes
-
-| Mode | Use when |
-|------|---------|
-| A: Website | Sitemap, content audit, SEO wiki |
-| B: GitHub | Codebase map, architecture wiki |
-| C: Business | Project wiki, competitive intelligence |
-| D: Personal | Second brain, goals, journal synthesis |
-| E: Research | Papers, concepts, thesis |
-| F: Book/Course | Chapter tracker, course notes |
-
-Modes can be combined.
-
----
-
-## What Gets Created
-
-A typical scaffold creates:
-- Folder structure for your chosen mode
-- `wiki/index.md`: master catalog
-- `wiki/log.md`: append-only operation log
-- `wiki/hot.md`: recent context cache
-- `wiki/overview.md`: executive summary
-- `wiki/meta/dashboard.base`: Bases dashboard (primary, native Obsidian)
-- `wiki/meta/dashboard.md`: Legacy Dataview dashboard (optional fallback)
-- `_templates/`: Obsidian Templater templates for each note type
-- `.obsidian/snippets/vault-colors.css`: color-coded file explorer
-- Vault `CLAUDE.md`: auto-loaded project instructions
-
----
-
-## MCP Setup (Optional)
-
-MCP lets Claude read and write vault notes directly without copy-paste.
-
-Option A (REST API based):
-1. Install the Local REST API plugin in Obsidian
-2. Copy your API key
-3. Run:
-```bash
-claude mcp add-json obsidian-vault '{
-  "type": "stdio",
-  "command": "uvx",
-  "args": ["mcp-obsidian"],
-  "env": {
-    "OBSIDIAN_API_KEY": "your-key",
-    "OBSIDIAN_HOST": "127.0.0.1",
-    "OBSIDIAN_PORT": "27124",
-    "NODE_TLS_REJECT_UNAUTHORIZED": "0"
-  }
-}' --scope user
-```
-
-Option B (filesystem based, no plugin needed):
-```bash
-claude mcp add-json obsidian-vault '{
-  "type": "stdio",
-  "command": "npx",
-  "args": ["-y", "@bitbonsai/mcpvault@latest", "/path/to/your/vault"]
-}' --scope user
-```
-
----
-
-## Plugins
-
-### Core Plugins (built into Obsidian: no install needed)
-
-| Plugin | Purpose |
-|--------|---------|
-| **Bases** | Powers `wiki/meta/dashboard.base`: native database views. Available since Obsidian v1.9.10 (August 2025). **Replaces Dataview for the primary dashboard.** |
-| **Properties** | Visual frontmatter editor |
-| **Backlinks**, **Outline**, **Graph view** | Standard navigation |
-
-### Pre-installed Community Plugins (ship with this vault)
-
-Enable in **Settings → Community Plugins → enable**:
-
-| Plugin | Purpose | Notes |
-|--------|---------|-------|
-| **Calendar** | Right-sidebar calendar with word count + task dots | Pre-installed |
-| **Thino** | Quick memo capture panel | Pre-installed |
-| **Excalidraw** | Freehand drawing canvas, annotate images | Pre-installed* |
-| **Banners** | Notion-style header image via `banner:` frontmatter | Pre-installed |
-
-\* Excalidraw `main.js` (8MB) is downloaded automatically by `setup-vault.sh`. It is not tracked in git.
-
-### Also install from Community Plugins (not pre-installed)
-
-| Plugin | Purpose |
-|--------|---------|
-| **Templater** | Auto-fills frontmatter from `_templates/` |
-| **Obsidian Git** | Auto-commits vault every 15 minutes |
-| **Dataview** *(optional/legacy)* | Only needed for the legacy `wiki/meta/dashboard.md` queries. The primary dashboard now uses Bases. |
-
-Also install the **[Obsidian Web Clipper](https://obsidian.md/clipper)** browser extension. Sends web pages to `.raw/` in one click.
-
----
-
-## CSS Snippets (auto-enabled by setup-vault.sh)
-
-Three snippets ship with the vault and are enabled automatically:
-
-| Snippet | Effect |
-|---------|--------|
-| `vault-colors` | Color-codes `wiki/` folders by type in the file explorer (blue = concepts, green = sources, purple = entities) |
-| `ITS-Dataview-Cards` | Turns Dataview `TABLE` queries into visual card grids: use ` ```dataviewjs ` with `.cards` class |
-| `ITS-Image-Adjustments` | Fine-grained image sizing in notes: append `\|100` to any image embed |
-
----
-
-## Banner Plugin
-
-Add to any wiki page frontmatter:
+CLAUDE.md に `business_hours` フィールドを設定すると、scheduled agent が業務時間外にのみ動作する。`/sb-doctor` で業務時間内発火を 🟡 WARN として検出。
 
 ```yaml
-banner: "_attachments/images/your-image.png"
-banner_icon: "🧠"
+business_hours:
+  timezone: "Asia/Tokyo"
+  weekday: "10:00-19:00"
+  weekend: "off"
+  holidays: "off"
 ```
 
-The page renders a full-width header image in Obsidian. Works great for hub pages and overviews.
+**memory freshness gate**
 
----
+すべての wiki ページに 3 フィールドを必須化。`(today - Last-verified) > Half-life` になったページは自動で ADVISORY 扱いとなり、`/sb-doctor` が警告を出す。
 
-## File Structure
-
-```
-claude-obsidian/
-├── .claude-plugin/
-│   ├── plugin.json              # manifest
-│   └── marketplace.json         # distribution
-├── skills/
-│   ├── wiki/                    # orchestrator + references (7 ref files)
-│   ├── wiki-ingest/             # INGEST operation
-│   ├── wiki-query/              # QUERY operation
-│   ├── wiki-lint/               # LINT operation
-│   ├── save/                    # /save: file conversations to wiki
-│   ├── autoresearch/            # /autoresearch: autonomous research loop
-│   │   └── references/
-│   │       └── program.md       # configurable research objectives
-│   └── canvas/                  # /canvas: visual layer (images, PDFs, notes)
-│       └── references/
-│           └── canvas-spec.md   # Obsidian canvas JSON format reference
-├── agents/
-│   ├── wiki-ingest.md           # parallel ingestion agent
-│   └── wiki-lint.md             # health check agent
-├── commands/
-│   ├── wiki.md                  # /wiki bootstrap command
-│   ├── save.md                  # /save command
-│   ├── autoresearch.md          # /autoresearch command
-│   └── canvas.md                # /canvas visual layer command
-├── hooks/
-│   └── hooks.json               # SessionStart + Stop hot cache hooks
-├── _templates/                  # Obsidian Templater templates
-├── wiki/
-│   ├── Wiki Map.canvas          # visual hub, central graph node
-│   ├── canvases/                # welcome.canvas + main.canvas (visual demos)
-│   ├── getting-started.md       # onboarding walkthrough (inside the vault)
-│   ├── concepts/                # seeded: LLM Wiki Pattern, Hot Cache, Compounding Knowledge
-│   ├── entities/                # seeded: Andrej Karpathy
-│   ├── sources/                 # populated by your first ingest
-│   └── meta/
-│       ├── dashboard.base       # Bases dashboard (primary)
-│       └── dashboard.md         # Legacy Dataview dashboard (optional)
-├── .raw/                        # source documents (hidden in Obsidian)
-├── .obsidian/snippets/          # vault-colors.css (3-color scheme)
-├── WIKI.md                      # full schema reference
-├── CLAUDE.md                    # project instructions
-└── README.md                    # this file
+```yaml
+Status: ACTIVE
+Last-verified: 2026-05-05
+Half-life: 30d
 ```
 
----
+**Karpathy literal 準拠**
 
-## AutoResearch: program.md
+`/sb-ingest` は "REWRITE the vault — this is the critical step. Don't just create new pages. Rewrite existing ones." を強制する。Entities / Concepts / Projects / Contradictions の 4 並列エージェントが既存ページを更新し続ける。
 
-The `/autoresearch` command is configurable. Edit `skills/autoresearch/references/program.md` to control:
+### 初回セットアップ詳細
 
-- What sources to prefer (academic, official docs, news)
-- Confidence scoring rules
-- Max rounds and max pages per session
-- Domain-specific constraints
-
-The default program works for general research. Override it for your domain. A medical researcher would add "prefer PubMed". A business analyst would add "focus on market data and filings".
+詳細な運用ガイド: [WALKTHROUGH.md](WALKTHROUGH.md)
 
 ---
 
-## Seed Vault
+## English
 
-This repo ships with a seeded vault. Open it in Obsidian and you'll see:
+JP-focused Claude + Obsidian second-brain plugin for solo founders and small teams (1-5 people). Optimizes the [Karpathy LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) for small context windows and Japanese business workflows.
 
-- `wiki/concepts/`: LLM Wiki Pattern, Hot Cache, Compounding Knowledge
-- `wiki/entities/`: Andrej Karpathy
-- `wiki/sources/`: empty until your first ingest
-- `wiki/meta/dashboard.base`: Bases dashboard (works in any Obsidian v1.9.10+)
-- `wiki/meta/dashboard.md`: Legacy Dataview dashboard (optional fallback)
+### Key features
 
-The graph view will show a connected cluster of 5 pages. This is what the wiki looks like after one ingest. Add more sources and it grows from there.
+- **5-layer hot cache**: tiered context management from global summary to individual pages
+- **JP business presets**: dedicated commands for meeting minutes, proposal diffs, Slack summaries
+- **Business hours guard**: `business_hours` field restricts scheduled agents to off-hours
+- **Memory freshness gate**: `Status / Last-verified / Half-life` frontmatter detects stale knowledge
+- **Karpathy literal compliance**: forces vault rewrite (not just new page creation) on every ingest
+- **Wiki health diagnostics**: `/sb-doctor` with 8-category severity scoring
+- **Conflict reconciliation**: `/sb-reconcile` with evidence-based winner selection
+- **Knowledge synthesis**: `/sb-synthesize` with 4 parallel folds + JP sub-modes
 
-<p align="center">
-  <img src="wiki/meta/wiki-graph-grow.gif" alt="Knowledge graph growing" width="48%" />
-  <img src="wiki/meta/workflow-loop.gif" alt="Workflow loop" width="48%" />
-</p>
-
----
-
-## Companion: claude-canvas
-
-For the visual layer, [claude-canvas](https://github.com/AgriciDaniel/claude-canvas) adds AI-orchestrated canvas creation - knowledge graphs, presentations, flowcharts, mood boards with 12 templates and 6 layout algorithms. Auto-detects claude-obsidian vaults.
+### Quick start
 
 ```bash
-claude plugin install AgriciDaniel/claude-canvas
+# Step 1: add marketplace
+claude plugin marketplace add {{INSTALL_PATH}}
+
+# Step 2: install plugin
+claude plugin install claude-second-brain-jp@claude-second-brain-jp-marketplace
 ```
 
+Open your Obsidian vault folder in Claude Code. Type `/wiki` to begin.
+
+### Attribution
+
+- Forked from [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (MIT) — upstream knowledge engine foundation
+- eug commands (`/sb-doctor`, `/sb-reconcile`, `/sb-synthesize`) adapted from [eugeniughelbur/obsidian-second-brain](https://github.com/eugeniughelbur/obsidian-second-brain) (MIT, commit `{{ATTRIBUTION_EUG_SHA}}`)
+- Based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+- Built by [Kazuya Hibara](https://github.com/Kazuya-Hibara)
+
+Full attribution details: [ATTRIBUTION.md](ATTRIBUTION.md)
+
 ---
 
-## Community
-
-- [Blog post](https://agricidaniel.com/blog/claude-obsidian-ai-second-brain) - deep dive with competitor analysis, data charts, and workflow demos
-- [AI Marketing Hub](https://www.skool.com/ai-marketing-hub) - 2,800+ members, free community
-- [YouTube](https://www.youtube.com/@AgriciDaniel) - tutorials and demos
-- [All open-source tools](https://github.com/AgriciDaniel) - claude-seo, claude-ads, claude-blog, and more
-
----
-
-*Based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). Built by [Agrici Daniel](https://agricidaniel.com/about).*
+*MIT License. See [LICENSE](LICENSE) for details.*
