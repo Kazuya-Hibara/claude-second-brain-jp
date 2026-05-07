@@ -1,8 +1,10 @@
 # claude-second-brain-jp — Implementation Plan
 
-**Status**: Phase 1 完了 + Phase 2 部分 (2.1/2.4/2.5/2.6) 完了 + Phase 4 全完了 (2026-05-05)
-**Repo**: https://github.com/Kazuya-Hibara/claude-second-brain-jp (v0.1.0-jp.1)
-**Remaining effort**: Phase 2.2/2.3/2.7 (~10-15h) + Phase 3 (~8-15h) + Phase 5 publish (~4-6h)
+**Status**: **Phase 1-5 完了 (v0.1.0、2026-05-07)**
+**Repo**: https://github.com/Kazuya-Hibara/claude-second-brain-jp (v0.1.0)
+**Release**: https://github.com/Kazuya-Hibara/claude-second-brain-jp/releases/tag/v0.1.0
+**Distribution**: `claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp` (self-hosted、Anthropic 公式 marketplace は社員 bundled 専用のため不要)
+**Remaining**: Phase 5.4 (告知、user voice 必須) + Phase 6 (maintenance) は v0.1.0 scope 外
 
 ## Phase 0: Pre-flight (user 確認事項)
 
@@ -10,7 +12,7 @@
 
 - [x] GitHub repo 作成: `Kazuya-Hibara/claude-second-brain-jp` (public, MIT、2026-05-05 完了)
 - [x] AgriciDaniel/claude-obsidian の fork 方針: **gh fork** (upstream merge 経路を維持)
-- [ ] CC plugin marketplace 登録 (Phase 5 まで保留、v0.1.0 安定性検証後)
+- [x] CC plugin self-hosted distribution 採用 (v0.1.0、`claude plugin publish` subcommand 不在を確認、Anthropic 公式 marketplace は @anthropic.com 社員 bundled 専用 → 第三者 plugin は repo 自前 marketplace.json + `claude plugin marketplace add <repo>` で配布)
 - [ ] `claude-second-brain-jp.com` 等の docs site ドメイン (保留、`github.io` で十分時に再検討)
 
 ## Phase 1: Fork & local clone ✅ 完了 (2026-05-05、commit `93a5a20`)
@@ -32,9 +34,9 @@ gh repo fork AgriciDaniel/claude-obsidian --fork-name=claude-second-brain-jp --c
 
 GitHub side: description / homepage / topics (8 種) を API 経由で設定済。fork=true、parent=AgriciDaniel/claude-obsidian。
 
-## Phase 2: 7 JP additions
+## Phase 2: 7 JP additions ✅ 全完了
 
-**Status**: 2.1 / 2.4 / 2.5 / 2.6 完了 (2026-05-05、commit `7419f94`)、2.2 / 2.3 / 2.7 は持ち越し。
+**Status**: 2.1 / 2.4 / 2.5 / 2.6 完了 (2026-05-05、commit `7419f94`)、2.2 / 2.3 / 2.7 完了 (2026-05-07、Wave 1+2 commits `e018e8e` / `8b46d99` / `7af1996`)。
 
 ### 2.1: 5-layer hot cache ✅ 完了
 
@@ -55,9 +57,9 @@ GitHub side: description / homepage / topics (8 種) を API 経由で設定済�
   - `--proposal-diff`: 提案書 vs 過去案件 wiki diff + 推奨セクション
   - `--slack-tldr`: Slack JP スレッド要約 + 関係者 + 任意 EN 翻訳
 
-### 2.2: Multilingual ingestion ⏳ 持ち越し (~5-8h)
+### 2.2: Multilingual ingestion ✅ 完了 (commit `e018e8e`、wiki-ingest → sb-ingest rename + JP/EN auto-detect + aliases 自動生成 + active config 8 file 一括書き換え)
 
-### 2.3: JP business synthesis prompts ⏳ 持ち越し (~3-5h)
+### 2.3: JP business synthesis prompts ✅ 完了 (commit `8b46d99`、/sb-synthesize に 3 sub-mode 統合、stub block 完全削除)
 
 ### 2.4: 小 context window 最適化 ✅ 完了
 
@@ -79,27 +81,29 @@ GitHub side: description / homepage / topics (8 種) を API 経由で設定済�
 - `/sb-doctor` の Frontmatter compliance check で missing を 🟡 WARN
 - `/sb-doctor` の Memory freshness check で `> Half-life` を 🟡 WARN
 
-### 2.7: 議事録 → ADR auto-graduate ⏳ 持ち越し (~3-5h)
+### 2.7: 議事録 → ADR auto-graduate ✅ 完了 (commit `7af1996`)
 
 - 新 command `/sb-graduate-meeting`
 - 議事録の commitment が "決定事項" 構文 (例: 「〜と決定」「〜が承認」) を含む時、`wiki/decisions/YYYY-MM-DD-<slug>.md` に ADR フォーマットで書き出し
+- 複数 commitment は N 件別 ADR file に分割 (`<slug>-<N>` suffix)
 - 元議事録 page に `Graduated-to:` frontmatter で参照
+- slug allowlist regex `^[a-z0-9-]{1,60}$` + path traversal 防止 (Wave 4.5 security HIGH 反映)
 
-## Phase 3: eug 3 commands 移植
+## Phase 3: eug 3 commands 移植 ✅ 全完了 (commit pin 69b9acb、Wave 1 commits `4253b89` / `b751301` / `7f2ba8c`)
 
-### 3.1: `/sb-doctor` (steal `/obsidian-health`)
+### 3.1: `/sb-doctor` (steal `/obsidian-health`) ✅ 完了
 
 - eug の 8 categories + omc-doctor 6-step CRITICAL/WARN/OK skeleton fusion
 - 並列 subagent (Task tool) で各 category を分担
 - Severity 🔴/🟡/⚪ + Safe-auto / Destructive-confirm 二段階 fix
 
-### 3.2: `/sb-reconcile` (steal `/obsidian-reconcile`)
+### 3.2: `/sb-reconcile` (steal `/obsidian-reconcile`) ✅ 完了
 
 - 矛盾検出時、evidence-based winner 判定 + 敗者は `## History` section に保持
 - ambiguous case は user confirm (デフォルト OFF + opt-in flag)
 - 自動 mode は `--evidence-only` (明確な evidence ある時だけ)
 
-### 3.3: `/sb-synthesize` (steal `/obsidian-synthesize`)
+### 3.3: `/sb-synthesize` (steal `/obsidian-synthesize`) ✅ 完了 (shell + Wave 2 で JP sub-mode 統合)
 
 - cross-source / entity convergence / concept evolution / orphan rescue 4 並列 subagent
 - JP 系 3 サブモード (Phase 2.3 参照) を `--meeting-commitments` / `--proposal-diff` / `--slack-tldr` で切り替え
@@ -122,25 +126,30 @@ AgriciDaniel に対して spec から外れている点を修復:
 - `_CLAUDE.md` (eug の dual-file pattern) は **作らない**
 - root `CLAUDE.md` 1 枚で完結
 
-## Phase 5: Publish
+## Phase 5: Publish ✅ 完了 (5.1-5.3、5.4 は Out of scope)
 
-### 5.1: Docs
+### 5.1: Docs ✅ 完了 (commits `1ac783a` 5.1a draft + `489f0e4` 5.1b paste-merge)
 
 - `README.md`: JP / EN 両方、attribution、quick start (5 min install)
 - `WALKTHROUGH.md`: 初回 setup → 1 日目 → 1 週間目 → 1 ヶ月目の運用ガイド
 - `CHANGELOG.md`: semantic versioning、初回 v0.1.0
 - `docs/jp-business-presets.md`: 議事録 / 提案書 / Slack 翻訳 prompt 解説
 
-### 5.2: GitHub
+### 5.2: GitHub ✅ 完了 (USER GATE #1 通過 2026-05-07、release v0.1.0 published)
 
 - public リリース、release notes 作成
 - topics: `claude-code`, `obsidian`, `second-brain`, `knowledge-management`, `japanese`, `llm-wiki`, `karpathy`
 - README badge: stars / license / version
 
-### 5.3: CC marketplace
+### 5.3: CC marketplace ✅ 完了 (self-hosted、Premise 修正済)
 
-- Anthropic 公式 marketplace への submit (`claude plugin publish` or 同等手順)
-- `marketplace.json` の description を JP/EN 併記
+**実機 verify 結果**: `claude plugin publish` subcommand は **存在しない** (`claude plugin --help` の subcommands は disable / enable / install / list / marketplace / uninstall / update / validate のみ)。`anthropics/claude-code/.claude-plugin/marketplace.json` は社員 bundled 専用 (13 entries 全員 @anthropic.com)。第三者 plugin は **repo 自前の `.claude-plugin/marketplace.json`** + user 側 `claude plugin marketplace add <repo>` で subscribe する self-hosted パターン。
+
+実装内容 (commit `b482fee`):
+- `.claude-plugin/plugin.json` version `0.1.0-jp.1` → `0.1.0`
+- `.claude-plugin/marketplace.json` version 同期 + `ref: "main"` → `ref: "v0.1.0"` (release integrity)
+- README install snippet literal: `claude plugin marketplace add Kazuya-Hibara/claude-second-brain-jp`
+- `claude plugin validate` PASS
 
 ### 5.4: 認知拡大 (sb-persona-jp.md の channel ranking より)
 
