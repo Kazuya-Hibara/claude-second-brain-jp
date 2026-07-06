@@ -107,3 +107,6 @@ _attachments/
 .vault-meta/.tiling.lock
 .vault-meta/tiling-cache.json
 .vault-meta/tiling-cache.*.tmp
+
+# oh-my-claudecode local state
+.omc/
